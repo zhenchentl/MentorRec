@@ -16,8 +16,9 @@ DB_PAPERID_REFERENCES = 5
 DB_AUTHOR_PAPERIDS = 6
 DB_AUTHOR_COAUTHORS = 7
 DB_AUTHOR_VEC = 8
-DB_DOCS = 9 # cancled...
+DB_PAPER_REFERED = 9
 DB_DOC_AUTHOR_YEAR = 10
+DB_AUTHOR_VEC_NEW = 11
 
 IP = '172.11.250.186'
 PORT = 6379
@@ -43,10 +44,14 @@ class RedisHelper():
         self.authorCoauthorDB = redis.StrictRedis(IP, port = PORT, db = DB_AUTHOR_COAUTHORS)
         '''key-->set: The vector of One researcher'''
         self.authorVecDB = redis.StrictRedis(IP, port = PORT, db = DB_AUTHOR_VEC)
-        '''key-->value: The docs of every author in each year'''
-        self.docsDB = redis.StrictRedis(IP, port = PORT, db = DB_DOCS)
+        '''key-->set: The refered list of one paper'''
+        self.paperReferedDB = redis.StrictRedis(IP, port = PORT, db = DB_PAPER_REFERED)
+        # '''key-->value: The docs of every author in each year'''
+        # self.docsDB = redis.StrictRedis(IP, port = PORT, db = DB_DOCS)
         '''key-->value: The doc info, author and year'''
         self.docAuthorYear = redis.StrictRedis(IP, port = PORT, db = DB_DOC_AUTHOR_YEAR)
+        '''key-->set: The modified vector of one researcher'''
+        self.authorVecNewDB = redis.StrictRedis(IP, port = PORT, db = DB_AUTHOR_VEC_NEW)
 
     def addPaperYear(self, paperID, year):
         return self.paperYearDB.set(paperID, year)
@@ -57,7 +62,7 @@ class RedisHelper():
     def addPaperTitle(self, paperID, title):
         return self.paperTitleDB.set(paperID, title)
 
-    def addPaperAuthors(self, papeID, authors):
+    def addPaperAuthors(self, paperID, authors):
         return self.paperAuthorsDB.sadd(paperID, authors)
 
     def addPaperAbstract(self, paperID, abstract):
@@ -65,6 +70,9 @@ class RedisHelper():
 
     def addPaperReferences(self, paperID, references):
         return self.paperReferencesDB.sadd(paperID, references)
+
+    def addPaperRefered(self, paperID, referedID):
+        return self.paperReferedDB.sadd(paperID, referedID)
 
     def addAuthorPapers(self, author, papers):
         return self.authorPapersDB.sadd(author, papers)
@@ -76,6 +84,10 @@ class RedisHelper():
         ''''VecItem-->topic1:year:value'''
         return self.authorVecDB.sadd(author, VecItem)
 
+    def addAuthorNewVec(self, author, VecItem):
+        '''VecItem-->topic1:year:value'''
+        return self.authorVecNewDB.sadd(author, VecItem)
+
     def addDoc(self, index, doc):
         return self.docsDB.set(index, doc)
 
@@ -84,6 +96,9 @@ class RedisHelper():
 
     def getAuthorList(self):
         return self.authorPapersDB.keys()
+
+    def getPaperList(self):
+        return self.paperVenueDB.keys()
 
     def getPaperYear(self, paperID):
         return self.paperYearDB.get(paperID)
@@ -103,6 +118,9 @@ class RedisHelper():
     def getPaperReferences(self, paperID):
         return self.paperReferencesDB.smembers(paperID)
 
+    def getPaperRefered(self, paperID):
+        return self. paperReferedDB.smembers(paperID)
+
     def getAuthorPapers(self, author):
         return self.authorPapersDB.smembers(author)
 
@@ -111,6 +129,9 @@ class RedisHelper():
 
     def getAuthorVec(self, author):
         return self.authorVecDB.smembers(author)
+
+    def getAuthorNewVec(self, author):
+        return self.authorVecNewDB.smembers(author)
 
     def getDoc(self, index):
         return self.docsDB.get(index)

@@ -12,6 +12,10 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', \
                     level=logging.INFO)
 from RedisHelper.RedisHelper import RedisHelper
 from util.param import *
+import re
+
+rewords = "Computing|Data|Knowledge Discovery|Knowledge-Discovery|"\
+    +"Artificial Intelligence|Social|Network|Information"
 
 class ReadData():
     """Store the data into redis"""
@@ -48,33 +52,71 @@ class ReadData():
                     self.save2Redis()
                     self.clearVar()
                 elif line[1] == '*': # title
-                    self.title = line.strip('\n')[2:]
+                    self.title = line.strip('\n\r')[2:]
                 elif line[1] == '@': # authors
-                    self.authors.extend(line.strip('\n')[2:].split(','))
+                    self.authors.extend(line.strip('\n\r')[2:].split(','))
                 elif line[1] == 't': # year
-                    self.year = line.strip('\n')[2:]
+                    self.year = line.strip()[2:]
                 elif line[1] == 'c': # venue
-                    self.venue = line.strip('\n')[2:]
+                    self.venue = line.strip('\n\r')[2:]
                 elif line[1] == 'i': # paperID
-                    self.paperID = line.strip('\n')[6:]
+                    self.paperID = line.strip()[6:]
                 elif line[1] == '%': # references
-                    self.references.append(line.strip('\n')[2:])
+                    self.references.append(line.strip()[2:])
                 elif line[1] == '!': # abstract
-                    self.abstract = line.strip('\n')[2:]
+                    self.abstract = line.strip('\n\r')[2:]
 
     def save2Redis(self):
-        self.redis.addPaperYear(self.paperID, self.year)
-        self.redis.addPaperVenue(self.paperID, self.venue)
-        self.redis.addPaperTitle(self.paperID, self.title)
-        self.redis.addPaperAbstract(self.paperID, self.abstract)
-        self.redis.addPaperReferences(self.paperID, self.references)
-        for author in self.authors:
-            self.redis.addAuthorPapers(author, self.paperID)
-        if len(self.authors) > 1:
-            for i in range(len(self.authors)):
-                self.redis.addAuthorPapers(self.authors[i], self.paperID)
-                self.redis.addAuthorCoauthor(self.authors[i], \
-                                             self.authors[:i] + self.authors[i + 1:])
+        if re.search(rewords, self.venue):
+            if self.paperID != '' and self.year != '':
+                if int(self.year) >= PAPER_START_YEAR:
+                    self.redis.addPaperYear(self.paperID, self.year)
+                    self.redis.addPaperVenue(self.paperID, self.venue)
+                    self.redis.addPaperTitle(self.paperID, self.title)
+                    self.redis.addPaperAbstract(self.paperID, self.abstract)
+                    if self.references[0] != '':
+                        self.redis.addPaperReferences(self.paperID, self.references)
+                        for reference in self.references:
+                            self.redis.addPaperRefered(reference, self.paperID)
+                    for author in self.authors:
+                        self.redis.addAuthorPapers(author, self.paperID)
+                        self.redis.addPaperAuthors(self.paperID, author)
+                    if len(self.authors) > 1:
+                        for i in range(len(self.authors)):
+                            self.redis.addAuthorPapers(self.authors[i], self.paperID)
+                            self.redis.addAuthorCoauthor(self.authors[i], \
+                                                         self.authors[:i] + self.authors[i + 1:])
+class Docs():
+    """docstring for Docs"""
+    def __init__(self):
+        logging.info('conduct docs firstly')
+        self.redis = RedisHelper()
+
+    def conductDocs(self):
+        fileWtriter = file(PATH_DOC_AUTHOR, 'w')
+        authorList = self.redis.getAuthorList()
+        authorDoc = dict() # year-->docs. the docs of an author in every year
+        index = 0
+        for author in authorList:
+            authorDoc = {}
+            papers = self.redis.getAuthorPapers(author)
+            for paper in papers:
+                year = self.redis.getPaperYear(paper)
+                if int(year) <= TEST_DATA_YEAR: # we only use the data in ten years
+                    content = self.redis.getPaperAbstract(paper)
+                    if len(content) < 3: # if there is no abstract,return title
+                        content = self.redis.getPaperTitle(paper)
+                    doc = authorDoc.setdefault(year, "")
+                    authorDoc[year] = doc + content
+            for year, doc in authorDoc.items():
+                if index % 10000 == 0: print index
+                fileWtriter.write(doc + '\n')
+                self.redis.addDocAuthorYear(index, author, year)
+                index += 1
+        fileWtriter.close()
+
 if __name__ == '__main__':
     read = ReadData()
     read.read()
+    docs = Docs()
+    docs.conductDocs()

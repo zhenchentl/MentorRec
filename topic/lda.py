@@ -14,35 +14,6 @@ from RedisHelper.RedisHelper import RedisHelper
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', \
                     level=logging.INFO)
 
-class Docs():
-    """docstring for Docs"""
-    def __init__(self):
-        logging.info('conduct docs firstly')
-        self.redis = RedisHelper()
-
-    def conductDocs(self):
-        fileWtriter = file(PATH_DOC_AUTHOR, 'w')
-        authorList = self.redis.getAuthorList()
-        authorDoc = dict() # year-->docs. the docs of an author in every year
-        index = 0
-        for author in authorList:
-            authorDoc = {}
-            papers = self.redis.getAuthorPapers(author)
-            for paper in papers:
-                year = self.redis.getPaperYear(paper)
-                if year >= PAPER_START_YEAR: # we only use the data in ten years
-                    content = self.redis.getPaperAbstract(paper)
-                    if len(content) == 0: # if there is no abstract,return title
-                        content = self.redis.getPaperTitle(paper)
-                    doc = authorDoc.setdefault(year, "")
-                    authorDoc[year] = doc + content
-            for year, doc in authorDoc.items():
-                if index % 10000 == 0: print index
-                fileWtriter.write(doc + '\n')
-                self.redis.addDocAuthorYear(index, author, year)
-                index += 1
-        fileWtriter.close()
-
 class baselda():
     """docstring for baselda"""
     def __init__(self):
@@ -50,7 +21,7 @@ class baselda():
         self.redis = RedisHelper()
         self.docs = list()
         for line in open(PATH_DOC_AUTHOR, 'r'):
-            self.docs.append(line.strip('\n'))
+            self.docs.append(line.strip('\n').split())
         logging.info("init ending...")
 
     def lda_setp1(self):
@@ -70,23 +41,26 @@ class baselda():
         mm = corpora.MmCorpus(PATH_LDA_MM)
         logging.info('LDA Start.')
         lda = models.ldamodel.LdaModel(corpus=mm, id2word=id2word, \
-            num_topics=10, update_every=1, chunksize=10000, passes=1)
+            num_topics=LDA_CLUSTER_NUM, update_every=1, chunksize=10000, passes=1)
         logging.info('LDA End')
+
         corpus_lda = list(lda[mm])
         self.saveVec(corpus_lda)
 
     def saveVec(self, corpus_lda):
-        DocId = 0
-        for topic, value in corpus_lda:
+        print len(corpus_lda)
+        for DocId in range(len(corpus_lda)):
+            # print DocId
             author, year = self.redis.getDocAuthorYear(DocId).split(':')
-            self.redis.addAuthorVec(author, str(topic) + ':' + str(year) + \
-                                    ':' + str(value))
+            for topic, value in corpus_lda[DocId]:
+                self.redis.addAuthorVec(author, str(topic) + ':' + str(year) + \
+                                        ':' + str(value))
         self.docs = []
         corpus_lda = []
 
 if __name__ == '__main__':
-    # docs = Docs()
-    # docs.conductDocs()
     baselda = baselda()
+    # step1:
     baselda.lda_setp1()
+    # step2:
     baselda.lda_step2()
