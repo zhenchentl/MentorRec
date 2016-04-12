@@ -15,6 +15,13 @@ class Recom():
     """docstring for Recom"""
     def __init__(self):
         self.redis = RedisHelper()
+        self.authorReferedNum = dict()
+        authors = self.redis.getAuthorList()
+        for author in authors:
+            referedNum = 1.0
+            papers = self.redis.getAuthorPapers(author)
+            referedNum = sum([len(self.redis.getPaperRefered(paper)) for paper in papers])
+            self.authorReferedNum[author] = referedNum
 
     def recom(self):
         authors = self.redis.getAuthorList()
@@ -31,10 +38,9 @@ class Recom():
         authors = self.redis.getAuthorList()
         sim = dict()
         for author in authors:
-            papers = self.redis.getAuthorPapers(author)
-            referedNum = sum([len(self.redis.getPaperRefered(paper)) for paper in papers])
-            sim[author] = referedNum * self.similarity(self.redis.getAuthorNewVec(target),\
-                                          self.redis.getAuthorNewVec(author))
+            sim[author] = self.authorReferedNum[author] * \
+            self.similarity(self.redis.getAuthorNewVec(target),\
+                            self.redis.getAuthorNewVec(author))
         return sorted(sim.iteritems(), key = lambda d : d[1],\
                       reverse = True)[:RECOM_TOP_N]
 

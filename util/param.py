@@ -11,8 +11,8 @@ import os
 PAPER_START_YEAR = 2000
 TEST_DATA_YEAR = 2009
 
-LDA_CLUSTER_NUM = 10
-VEC_TOP_N = 5
+LDA_CLUSTER_NUM = 200
+VEC_TOP_N = 50
 RECOM_TOP_N = 200
 
 
@@ -27,4 +27,8 @@ PATH_LDA_MM = '../../datasets/ldf.mm'
 PATH_TARGET_AUTHOR = '../util/target_' + str(TARGET_PAPER_NUM_MIN) + '_' \
     + str(TARGET_PAPER_NUM_MAX) + '.txt'
 PATH_RECOM_LIST = '../util/recomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
+    + str(TARGET_PAPER_NUM_MAX) + '_logE_200_50' + '.txt'
+PATH_FRIENDS_RECOM_LIST = '../util/friendsRecomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
+    + str(TARGET_PAPER_NUM_MAX) + '.txt'
+PATH_CITATION_RECOM_LIST = '../util/citationRecomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
     + str(TARGET_PAPER_NUM_MAX) + '.txt'

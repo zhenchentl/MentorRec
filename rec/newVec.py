@@ -38,8 +38,8 @@ class newVec():
             value = item.split(':')[2]
             if int(year) >= PAPER_START_YEAR:
                 d[topic + ':' + year] = float(value)
-        d = sorted(d.iteritems(), key = lambda d:d[1], reverse = True)[:5]
-        d = {item[0] : TimeFunctionLog10(int(item[0].split(':')[1])) * item[1] \
+        d = sorted(d.iteritems(), key = lambda d:d[1], reverse = True)[:VEC_TOP_N]
+        d = {item[0] : TimeFunctionLoge(int(item[0].split(':')[1])) * item[1] \
             for item in d}
         return d
 

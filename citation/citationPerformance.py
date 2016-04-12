@@ -18,7 +18,7 @@ class Perform():
         self.redis = RedisHelper()
 
     def getRecomList(self):
-        fileRecomList = open(PATH_RECOM_LIST, 'r')
+        fileRecomList = open(PATH_CITATION_RECOM_LIST, 'r')
         recomlist = pickle.load(fileRecomList)
         return recomlist
 

@@ -17,10 +17,10 @@ def TimeFunctionLog10(year):
     return math.log(year - PAPER_START_YEAR + 2, 10)
 
 def TimeFunctionLoge(year):
-    return math.log(year - PAPER_START_YEAR + 2, 10)
+    return math.log(year - PAPER_START_YEAR + 2)
 
 def TimeFunctionLine(year):
-    return (year - PAPER_START_YEAR + 1) / (2015 - PAPER_START_YEAR)
+    return (year - PAPER_START_YEAR + 1)
 
 def saveTargetAuthor():
     redis = RedisHelper()
@@ -52,6 +52,7 @@ def saveTargetAuthor():
             count += 1
             if count == 100:
                 break
+    print count
 
     # while True:
     #     author = random.choice(authors)

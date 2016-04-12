@@ -13,6 +13,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', \
 from RedisHelper.RedisHelper import RedisHelper
 from param import *
 import re
+import pickle
 
 rewords = "Computing|Data|Knowledge Discovery|Knowledge-Discovery|"\
     +"Artificial Intelligence|Social|Network|Information"
@@ -63,6 +64,9 @@ class ReadData():
                         self.d[0] = self.d.setdefault(0, 0) + 1
 
 if __name__ == '__main__':
-    readData = ReadData()
-    readData.read()
-    print sorted(readData.d.iteritems(), key=lambda d : readData.d[1], reverse = True)
+    # readData = ReadData()
+    # readData.read()
+    # print sorted(readData.d.iteritems(), key=lambda d : readData.d[1], reverse = True)
+    fileRecomList = open(PATH_FRIENDS_RECOM_LIST, 'r')
+    recomlist = pickle.load(fileRecomList)
+    print recomlist

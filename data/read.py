@@ -75,8 +75,8 @@ class ReadData():
                     self.redis.addPaperTitle(self.paperID, self.title)
                     self.redis.addPaperAbstract(self.paperID, self.abstract)
                     if self.references[0] != '':
-                        self.redis.addPaperReferences(self.paperID, self.references)
                         for reference in self.references:
+                            self.redis.addPaperReferences(self.paperID, reference)
                             self.redis.addPaperRefered(reference, self.paperID)
                     for author in self.authors:
                         self.redis.addAuthorPapers(author, self.paperID)
@@ -84,8 +84,9 @@ class ReadData():
                     if len(self.authors) > 1:
                         for i in range(len(self.authors)):
                             self.redis.addAuthorPapers(self.authors[i], self.paperID)
-                            self.redis.addAuthorCoauthor(self.authors[i], \
-                                                         self.authors[:i] + self.authors[i + 1:])
+                            for j in range(i + 1, len(self.authors)):
+                                self.redis.addAuthorCoauthor(self.authors[i], self.authors[j])
+                                self.redis.addAuthorCoauthor(self.authors[j], self.authors[i])
 class Docs():
     """docstring for Docs"""
     def __init__(self):
