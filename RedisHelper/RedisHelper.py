@@ -19,8 +19,9 @@ DB_AUTHOR_VEC = 8
 DB_PAPER_REFERED = 9
 DB_DOC_AUTHOR_YEAR = 10
 DB_AUTHOR_VEC_NEW = 11
+DB_AUTHOR_COAU_TIME = 12
 
-IP = '172.11.250.186'
+IP = '127.0.0.1'
 PORT = 6379
 
 class RedisHelper():
@@ -52,6 +53,9 @@ class RedisHelper():
         self.docAuthorYear = redis.StrictRedis(IP, port = PORT, db = DB_DOC_AUTHOR_YEAR)
         '''key-->set: The modified vector of one researcher'''
         self.authorVecNewDB = redis.StrictRedis(IP, port = PORT, db = DB_AUTHOR_VEC_NEW)
+        '''key-->set: coauthor time'''
+        self.auCoauTimeDB = redis.StrictRedis(IP, port = PORT, db = DB_AUTHOR_COAU_TIME)
+
 
     def addPaperYear(self, paperID, year):
         return self.paperYearDB.set(paperID, year)
@@ -87,6 +91,9 @@ class RedisHelper():
     def addAuthorNewVec(self, author, VecItem):
         '''VecItem-->topic1:year:value'''
         return self.authorVecNewDB.sadd(author, VecItem)
+
+    def addAuCoauTime(self, key, year):
+        self.auCoauTimeDB.sadd(key, int(year))
 
     def addDoc(self, index, doc):
         return self.docsDB.set(index, doc)
@@ -141,3 +148,28 @@ class RedisHelper():
 
     def getDocAuthorYear(self, index):
         return self.docAuthorYear.get(index)
+
+    def getAuCoauTime(self, key):
+        return self.auCoauTimeDB.smembers(key)
+
+if __name__ == '__main__':
+    mRedis = RedisHelper()
+    # papers = mRedis.getPaperList()
+    # print len(papers)
+    # index = 0
+    # for paper in papers:
+    #     if index % 1000 == 0:
+    #         print index
+    #     index += 1
+    #     year = int(mRedis.getPaperYear(paper))
+    #     authors = mRedis.getPaperAuthors(paper)
+    #     for author in authors:
+    #         for coau in authors:
+    #             mRedis.addAuCoauTime(author + ':' + coau, year)
+    #             mRedis.addAuCoauTime(coau + ':' + author, year)
+
+    # print min(mRedis.getAuCoauTime("1232"))
+
+
+
+

@@ -16,8 +16,8 @@ VEC_TOP_N = 50
 RECOM_TOP_N = 200
 
 
-TARGET_PAPER_NUM_MIN, TARGET_PAPER_NUM_MAX = 2,5
-# TARGET_PAPER_NUM_MIN, TARGET_PAPER_NUM_MAX = 6,25
+# TARGET_PAPER_NUM_MIN, TARGET_PAPER_NUM_MAX = 2,5
+TARGET_PAPER_NUM_MIN, TARGET_PAPER_NUM_MAX = 6,25
 # TARGET_PAPER_NUM_MIN, TARGET_PAPER_NUM_MAX = 26,100
 
 PATH_DATASET_TXT = '../../datasets/publications.txt'
@@ -31,4 +31,8 @@ PATH_RECOM_LIST = '../util/recomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
 PATH_FRIENDS_RECOM_LIST = '../util/friendsRecomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
     + str(TARGET_PAPER_NUM_MAX) + '.txt'
 PATH_CITATION_RECOM_LIST = '../util/citationRecomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
+    + str(TARGET_PAPER_NUM_MAX) + '.txt'
+PATH_RWR_RECOM_LIST = '../util/rwrRecomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
+    + str(TARGET_PAPER_NUM_MAX) + '.txt'
+PATH_CONTENT_RECOM_LIST = '../util/contentRecomList' + str(TARGET_PAPER_NUM_MIN) + '_' \
     + str(TARGET_PAPER_NUM_MAX) + '.txt'

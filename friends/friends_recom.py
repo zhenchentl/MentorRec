@@ -38,13 +38,12 @@ class Friends():
                         refers.extend(self.redis.getPaperReferences(paper))
             for refer in refers:
                 candidates.extend(list(self.redis.getPaperAuthors(refer)))
-        sim = dict.fromkeys(candidates, 0)
+        sim = dict()
         for can in candidates:
-            papers = self.redis.getAuthorPapers(can)
-            referedNum = sum([len(self.redis.getPaperRefered(paper))
-                             if int(self.redis.getPaperYear(paper)) < TEST_DATA_YEAR else 0
-                             for paper in papers])
-            sim[can] = referedNum
+            times = self.redis.getAuCoauTime(target + ':' + can)
+            if len(times) == 0 or min([int(time) for time in times]) >= TEST_DATA_YEAR:
+                c = sim.setdefault(can, 0)
+                sim[can] = c + 1
         return sorted(sim.iteritems(), key = lambda d:d[1], reverse = True)[:RECOM_TOP_N]
 
 if __name__ == '__main__':

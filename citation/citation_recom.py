@@ -24,16 +24,7 @@ class Citation():
         recomlist = self.getRecomList()
         for index, target in enumerate(targets):
             print index
-            count = 0
-            recom = list()
-            while True:
-                item = random.choice(recomlist)
-                if item not in recom:
-                    recom.append(item)
-                    count += 1
-                    if count == 200:
-                        break
-            recom_result[target] = recom
+            recom_result[target] = recomlist
         resultsave = open(PATH_CITATION_RECOM_LIST, 'wb')
         pickle.dump(recom_result, resultsave)
         resultsave.close()
@@ -48,7 +39,7 @@ class Citation():
                 if int(self.redis.getPaperYear(paper)) < TEST_DATA_YEAR:
                     referedNum += len(self.redis.getPaperRefered(paper))
             sim[author] = referedNum
-        return sorted(sim.iteritems(), key = lambda d:d[1], reverse = True)[:1000]
+        return sorted(sim.iteritems(), key = lambda d:d[1], reverse = True)[:RECOM_TOP_N]
 
 if __name__ == '__main__':
     citation = Citation()
